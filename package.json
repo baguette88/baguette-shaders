@@ -1,0 +1,17 @@
+{
+  "name": "@baguette/shaders",
+  "version": "0.1.0",
+  "description": "Central three.js GLSL shader catalog for baguette88 games.",
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./*": "./src/*"
+  },
+  "files": ["index.js", "src", "registry.json"],
+  "private": true,
+  "peerDependencies": {
+    "three": ">=0.160.0"
+  }
+}

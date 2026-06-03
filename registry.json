@@ -1,0 +1,20 @@
+{
+  "name": "@baguette/shaders",
+  "description": "Central three.js GLSL shader catalog. Each module exports <name>Vertex, <name>Fragment, <name>Uniforms(opts).",
+  "shaders": [
+    { "name": "pine-tree-grow",  "module": "src/pine-tree-grow.glsl.js",  "prefix": "pineTreeGrow",   "builder": "buildPineTreeGeometry", "tags": ["foliage", "growth", "vertex-anim"] },
+    { "name": "water-surface",   "module": "src/water-surface.glsl.js",   "prefix": "waterSurface",   "tags": ["water", "surface"] },
+    { "name": "hologram",        "module": "src/hologram.glsl.js",        "prefix": "hologram",       "tags": ["sci-fi", "transparent"] },
+    { "name": "snow-ice",        "module": "src/snow-ice.glsl.js",        "prefix": "snowIce",        "tags": ["winter", "surface"] },
+    { "name": "lightning",       "module": "src/lightning.glsl.js",       "prefix": "lightning",      "tags": ["fx", "additive"] },
+    { "name": "flame",           "module": "src/flame.glsl.js",           "prefix": "flame",          "tags": ["fx", "fire", "additive"] },
+    { "name": "crystal-facet",   "module": "src/crystal-facet.glsl.js",   "prefix": "crystalFacet",   "tags": ["material", "iridescent"] },
+    { "name": "magic-circle",    "module": "src/magic-circle.glsl.js",    "prefix": "magicCircle",    "tags": ["fx", "additive"] },
+    { "name": "plasma-orb",      "module": "src/plasma-orb.glsl.js",      "prefix": "plasmaOrb",      "tags": ["fx", "energy", "additive"] },
+    { "name": "smoke",           "module": "src/smoke.glsl.js",           "prefix": "smoke",          "tags": ["fx", "transparent"] },
+    { "name": "electricity-arc", "module": "src/electricity-arc.glsl.js", "prefix": "electricityArc", "tags": ["fx", "additive"] },
+    { "name": "cloth-banner",    "module": "src/cloth-banner.glsl.js",    "prefix": "clothBanner",    "tags": ["material", "vertex-anim"] },
+    { "name": "oil-slick",       "module": "src/oil-slick.glsl.js",       "prefix": "oilSlick",       "tags": ["material", "iridescent"] },
+    { "name": "sand-dunes",      "module": "src/sand-dunes.glsl.js",      "prefix": "sandDunes",      "tags": ["terrain", "surface"] }
+  ]
+}

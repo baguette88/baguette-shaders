@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>pine-tree-grow · @baguette/shaders</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #0b1411; overflow: hidden;
+               font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace; color: #cfe9d8; }
+  #ui {
+    position: fixed; left: 16px; bottom: 16px; z-index: 10;
+    background: rgba(10, 22, 18, 0.78); border: 1px solid #1f3d30;
+    border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(6px);
+    width: 268px; box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  #ui h1 { font-size: 13px; margin: 0 0 2px; color: #9fd84a; letter-spacing: .02em; }
+  #ui .sub { color: #6f8f7d; margin: 0 0 10px; font-size: 11px; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 7px 0; }
+  .row label { width: 52px; color: #8fb59f; }
+  .row input[type=range] { flex: 1; accent-color: #4caf50; }
+  .row .val { width: 34px; text-align: right; color: #cfe9d8; }
+  button {
+    background: #16341f; color: #bff09a; border: 1px solid #2f6d3a;
+    border-radius: 7px; padding: 7px 10px; cursor: pointer; font: inherit; width: 100%;
+    margin-top: 6px;
+  }
+  button:hover { background: #1d4a2a; }
+  .hint { color: #5e7d6b; font-size: 10.5px; margin-top: 9px; }
+  code { color: #9fd84a; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>🌲 pine-tree-grow</h1>
+  <p class="sub">@baguette/shaders · drag <code>grow</code> or hit Plant</p>
+  <div class="row"><label>grow</label><input id="grow" type="range" min="0" max="1" step="0.001" value="0"><span class="val" id="growV">0.00</span></div>
+  <div class="row"><label>snow</label><input id="snow" type="range" min="0" max="1" step="0.01" value="0"><span class="val" id="snowV">0.00</span></div>
+  <div class="row"><label>wind</label><input id="wind" type="range" min="0" max="0.12" step="0.001" value="0.04"><span class="val" id="windV">0.04</span></div>
+  <button id="plant">▶ Plant (replay growth)</button>
+  <p class="hint">imported live from <code>../src/pine-tree-grow.glsl.js</code></p>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+window.THREE = THREE;
+import { buildPineTreeGeometry, pineTreeGrowVertex, pineTreeGrowFragment, pineTreeGrowUniforms }
+  from '../src/pine-tree-grow.glsl.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b1411);
+scene.fog = new THREE.Fog(0x0b1411, 9, 22);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(3.4, 3.0, 6.4);
+camera.lookAt(0, 2.0, 0);
+
+// ground disc
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(8, 48),
+  new THREE.MeshBasicMaterial({ color: 0x10231a })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// the tree
+const geo = buildPineTreeGeometry(THREE, { height: 4.0, tiers: 6, radial: 10 });
+const uniforms = pineTreeGrowUniforms({ THREE, height: geo.userData.height, grow: 0.0 });
+const mat = new THREE.ShaderMaterial({
+  vertexShader: pineTreeGrowVertex,
+  fragmentShader: pineTreeGrowFragment,
+  uniforms,
+  side: THREE.DoubleSide,
+});
+scene.add(new THREE.Mesh(geo, mat));
+
+// ---- controls -------------------------------------------------------------
+const $ = id => document.getElementById(id);
+let autoPlant = true, plantT = 0;
+const easeOutBack = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+$('grow').addEventListener('input', e => { autoPlant = false; uniforms.uGrow.value = +e.target.value; $('growV').textContent = (+e.target.value).toFixed(2); });
+$('snow').addEventListener('input', e => { uniforms.uSnow.value = +e.target.value; $('snowV').textContent = (+e.target.value).toFixed(2); });
+$('wind').addEventListener('input', e => { uniforms.uSway.value = +e.target.value; $('windV').textContent = (+e.target.value).toFixed(2); });
+$('plant').addEventListener('click', () => { autoPlant = true; plantT = 0; });
+
+// ---- loop -----------------------------------------------------------------
+const clock = new THREE.Clock();
+function frame() {
+  const dt = clock.getDelta();
+  uniforms.uTime.value += dt;
+
+  if (autoPlant) {
+    plantT = Math.min(1, plantT + dt / 3.2);          // ~3.2s to full grown
+    const g = Math.min(1, easeOutBack(plantT));        // little overshoot/settle
+    uniforms.uGrow.value = g;
+    $('grow').value = Math.min(1, g);
+    $('growV').textContent = Math.min(1, g).toFixed(2);
+    if (plantT >= 1) autoPlant = false;
+  }
+
+  scene.rotation.y += dt * 0.12;
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
