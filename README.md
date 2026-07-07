@@ -20,8 +20,8 @@ data lives in `registry.json` for tooling.
 
 ## Call on it from a new game
 
-These are local single-file three.js games, so the repo is **private** and games
-import from the local clone. Add the alias to your importmap:
+These are local single-file three.js games; games import from a local clone of
+this repo. Add the alias to your importmap:
 
 ```html
 <script type="importmap">
